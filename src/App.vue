@@ -26,9 +26,9 @@ const userStore = useUserStore()
 
 <style>
 .contenedor{
-  border: 1px solid gray;
-  border-radius: 10px;
-  background-color: beige;
+  border: 1px solid rgb(141, 179, 201);
+  border-radius: 20px;
+  background-color: rgb(208, 237, 238);
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -41,11 +41,13 @@ const userStore = useUserStore()
     border-radius: 7px;
     margin-left: 10px;
     padding: 10px;
-    background-color: aquamarine;
+    background-color: rgb(237, 244, 245);
+    color: rgb(57, 104, 112);
+
 }
 .color-green {
-  background-color: green;
-  color: white;
+    background-color: rgb(237, 244, 245);
+    color: rgb(57, 104, 112);
 }
 .padding-q {
   padding: 20px;
