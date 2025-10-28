@@ -1,6 +1,7 @@
 import {createRouter, createWebHistory} from "vue-router"
 import {useUserStore} from '../stores/user'
 
+
 import Home from '../views/Home.vue'
 import Editar from '../views/EditUrl.vue'
 import Login from '../views/Login.vue'
@@ -21,10 +22,10 @@ const requireAuth = async (to, from, next) => {
 }
 
 const routes = [
-    {path: '/', component: Home, beforeEnter: requireAuth},
-    {path: '/editar/:id', component: Editar, beforeEnter: requireAuth},
-    {path: '/login', component: Login},
-    {path: '/register', component: Register},
+    {path: '/', component: Home, beforeEnter: requireAuth, name: 'home'},
+    {path: '/editar/:id', component: Editar, beforeEnter: requireAuth },
+    {path: '/login', component: Login, name: 'login'},
+    {path: '/register', component: Register, name: 'register'},
 ]
 
 const router = createRouter({
