@@ -93,26 +93,24 @@ const handleRemove = file => {
     filelist.value = newFileList
 }
 
-    const handleChange = info => {
+    const handleChange = (info) => {
         if (info.file.status !== 'uploading') {
-    //console.log(file, fileList)
-    console.log(info.file)
+        console.log(info.file, info.fileList)
+        console.log(info.file)
 
     const isJpgOrPng = info.file.type === 'image/jpeg' || info.file.type === 'image/png';
-    if( !isJpgOrPng) {
-        message.error('Solo se permiten archivos JPG y PNG')
-        handleRemove(info.file)
-        return
+        if( !isJpgOrPng) {
+            message.error('Solo se permiten archivos JPG y PNG')
+            handleRemove(info.file)
+            return
     }
     const isLt2M = info.file.size / 1024 / 1024 < 2;
-    if (!isLt2M) {
-        message.error('La imagen debe ser menos a 2MB')
-        handleRemove(info.file)
-
-        return   
+        if (!isLt2M) {
+            message.error('La imagen debe ser menos a 2MB')
+            handleRemove(info.file)
+            return   
     }
 }
-
         let resFileList = [...info.fileList]
         resFileList = resFileList.slice(-1)
         resFileList = resFileList.map(file => {
@@ -125,22 +123,23 @@ const handleRemove = file => {
     }
 // --- Manejo de cambios en el Upload --- //
 const onFinish = async () => {
-  console.log(filelist.value[0])
 
-  // Si hay imagen seleccionada, súbela primero
-  if (filelist.value.length > 0) {
-    await userStore.updateImg(filelist.value[0])
-  }
+const error = await userStore.updateUser(
+    userStore.userData.displayName,
+    filelist.value[0]
+)
 
-  // Luego actualiza el nombre
-  const error = await userStore.updateUser(formState.displayName)
-
-  if (!error) {
+if (!error) {
     message.success('Perfil actualizado con éxito')
-  } else {
+} else if (error === 'storage/unauthorized') {
+    message.error('No tienes permiso para subir la imagen')
+} else if (error === 'storage/canceled') {
+    message.error('La subida fue cancelada')
+} else {
     message.error('Ocurrió un error al actualizar el perfil')
-  }
 }
+}
+
 
     
 const onFinishFailed = (errorInfo) => {

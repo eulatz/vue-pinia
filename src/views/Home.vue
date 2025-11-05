@@ -39,6 +39,7 @@
                     <a-button type="primary" @click="router.push(`/editar/${item.id}`)">
                         Editar
                     </a-button>
+                    <a-button @click="clipboard(item.id)">Copiar</a-button>
                 </a-space>
             </template>
             <p>Url Extensa: {{ item.name }} </p>
@@ -69,6 +70,20 @@ const confirm =async(id) => {
 }
 const cancel =() => { message.error('Url no eliminada')}
 
+const clipboard = (id) =>{
+    console.log(id)
+    if( !navigator.clipboard) {
+        return message.error("El portapapeles no es compatible")
+    }
+    const path = `${window.location.origin}/${id}` 
+    navigator.clipboard.writeText(path)
+    .then(()=> {
+        message.success("Texto copiado al portapapeles")
+    })
+    .catch(err => {
+        message.error("Error al copiar al portapapeles", err)
+    })
+}
 </script>
 
 

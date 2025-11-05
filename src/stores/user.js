@@ -40,39 +40,34 @@ await setDoc(docRef, this.userData)
             }
         },
 
-async updateImg (imagen)  {
-    
+async updateUser (displayName, imagen) {
+    this.loadingUser = true
+
     try {
-          if (!imagen || !imagen.originFileObj) {
+        if (!imagen || !imagen.originFileObj) {
             console.log("No hay archivo para subir")
             return
-        }
-        const storageRef = ref(storage, `${this.userData.uid}/perfil`)
-        await uploadBytes(storageRef, imagen.originFileObj)
+        } else {
 
-        const photoURL = await getDownloadURL(storageRef)
-        await updateProfile(auth.currentUser, {
-            photoURL
-    })
-        this.setUser(auth.currentUser)
-    
-        if (imagen) { console.log("existo")}
-} catch (error) {
-    console.log(error)
-}
-},
-        async updateUser (displayName) {
-
-            try {
-            await  updateProfile(auth.currentUser, {
-                displayName,
-            })
+            
+        const storageRef = ref(storage, `perfiles/${this.userData.uid}/perfil.png`)
+                await uploadBytes(storageRef, imagen.originFileObj)
+            
+            const photoURL = await getDownloadURL(storageRef)
+                await updateProfile(auth.currentUser, {displayName,photoURL})
+            
             this.setUser(auth.currentUser)
-            }
-            catch (error) {
-                console.log(error)
+        }
+        
+        } catch (error) {
+            console.error("🔥 Error al subir imagen:", error)
+            message.error("Error: " + error.code)
                 return error.code
-            }
+}
+finally {
+                this.loadingUser = false
+
+}
 
         },
         // --- Register User --- //

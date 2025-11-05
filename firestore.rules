@@ -3,9 +3,22 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Colección de URLs
     match /urls/{id} {
-      allow read, update,delete: if request.auth != null && request.auth.uid == resource.data.user;
-    	allow create: if request.auth != null;
+      // Solo el propietario puede leer, actualizar o borrar
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.user;
+      allow read: if true;
+      // Solo usuarios autenticados pueden crear documentos nuevos
+      allow create: if request.auth != null && request.resource.data.user == request.auth.uid;
+    }
+
+    // Colección de usuarios
+    match /users/{uid} {
+      // Solo el usuario autenticado puede acceder o modificar su propio documento
+      allow read, update, delete: if request.auth != null && request.auth.uid == uid;
+      
+      // Solo el usuario autenticado puede crear su propio documento
+      allow create: if request.auth != null && request.auth.uid == uid;
     }
   }
 }

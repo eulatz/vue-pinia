@@ -5,7 +5,7 @@ import {
     query,
     getDocs,
     where,
-    addDoc,
+    setDoc,
     deleteDoc,
     doc,
     getDoc 
@@ -23,131 +23,140 @@ export const useDatabaseStore = defineStore("database", {
         loading:false,
     }),
 
-    actions: {
+actions: {
 
-        async getUrls(){
-
-            if(this.documents.length !==0) {
-                return;
+    async getURL(id) {
+        try {
+            const docRef = doc(db , "urls", id);
+            const docSpan = await getDoc(docRef)
+            if (!docSpan.exists()) {
+                return false
             }
+            return docSpan.data().name
 
-            this.loadingDoc =true
-            try {
-                const q = query(
-                    collection(db, "urls"),
-                   where("user", "==", auth.currentUser.uid)
-                   )
+        } catch (error) {
+            console.log(error.message)
+            return false
+        }
+    },
+            async getUrls(){
+                if(this.documents.length !==0) {
+                    return; }
+                this.loadingDoc =true
                 
-                const querySnapshot = await getDocs(q)
-                    querySnapshot.forEach(doc => {
-                        console.log(doc.id,doc.data())
-                        this.documents.push ({
-                            id: doc.id,
-                            ...doc.data()
+                try {
+                    const q = query(
+                        collection(db, "urls"),
+                        where("user", "==", auth.currentUser.uid)
+                        )
+                    
+                    const querySnapshot = await getDocs(q)
+                        querySnapshot.forEach(doc => {
+                            console.log(doc.id,doc.data())
+                            this.documents.push ({
+                                id: doc.id,
+                                ...doc.data()
+                            })
                         })
+                    
+                } catch (error) {
+                    console.log(error.code)
+                    return error.code
+                }
+                finally{
+                    this.loadingDoc = false
+                }
+            },
+            async addUrl(name) {
+                this.loading =true
+                try {
+                    const objetoDoc = {
+                        name: name,
+                        short: nanoid(6),
+                        user: auth.currentUser.uid,
+                    }
+                    await setDoc(doc(db, 'urls', objetoDoc.short), objetoDoc)
+                    //console.log(docRef)
+                    this.documents.push({
+                        ...objetoDoc, id: objetoDoc.short,
                     })
-                
-            } catch (error) {
-                console.log(error.code)
-                return error.code
-            }
-            finally{
-                this.loadingDoc = false
-            }
-        },
-        async addUrl(name) {
-            this.loading =true
-            try {
-                const objetoDoc = {
-                    name: name,
-                    short: nanoid(6),
-                    user: auth.currentUser.uid,
+                }  
+                catch (error) {
+                    console.log(error)
+                } finally {
+                    this.loading =false
                 }
-                const docRef = await addDoc(collection(db, 'urls'), objetoDoc)
-                //console.log(docRef)
-                this.documents.push({
-                    ...objetoDoc, id: docRef.id
-                })
-            }  
-            catch (error) {
-                console.log(error)
-            } finally {
-                this.loading =false
-            }
-        },
-        async leerUrl(id) {
-            try {
-                const docRef = doc(db , "urls", id);
-                const docSpan= await getDoc(docRef)
-                
-                if (!docSpan.exists()) {
-                    throw new error ("No existe el doc")
-                }
-                if (docSpan.data().user !== auth.currentUser.uid) {
-                    throw new error ("No tienes privilegios para user est funcion")
-                }
-
-                return docSpan.data().name
-
-            } catch (error) {
-                console.log(Error.message)
-            }
-        },
-
-        async updateUrl(id, name) {
-            this.loading = true
-
-            try {
-                const docRef = doc(db, "urls", id)
-                const docSpan = await getDoc(docRef)
-                if (!docSpan.exists()) {
-                    throw new Error("no existe el doc")
-                }
-                if (docSpan.data().user !== auth.currentUser.uid){
-                    throw new Error("Yur Not Administrator")
-                }
-                await updateDoc(docRef, {
-                    name:name,
-                })
-
-                this.documents = this.documents.map((item) => 
-                    item.id === id ? ({...item, name :name}): item)
-                router.push('/')
-            } catch (error) {
-                console.log(error.message)
-                return error.message
-            }
-            finally {
-                this.loading = false
-
-            }
-
-        },
-        async deleteUrl (id) {
-            this.loading = true
-            try {
-                const docRef = doc(db, 'urls', id)
-                const docSpan = await getDoc(docRef)
+            },
+            async leerUrl(id) {
+                try {
+                    const docRef = doc(db , "urls", id);
+                    const docSpan= await getDoc(docRef)
+                    
                     if (!docSpan.exists()) {
-                        throw new error("no existe el doc")
+                        throw new Error ("No existe el doc")
                     }
-                
-                    if(docSpan.data().user !== auth.currentUser.uid){
-                        throw new Error("No tienes derechos de administrador para modificar estos datos")
+                    if (docSpan.data().user !== auth.currentUser.uid) {
+                        throw new Error ("No tienes privilegios para user est funcion")
                     }
 
-                await deleteDoc(docRef)
-                    this.documents =this.documents.filter(
-                        (item) => item.id !== id
-                )
+                    return docSpan.data().name
 
-            } catch (error) {
-                    //console.log(error.code)
+                } catch (error) {
+                    console.log(error.message)
+                }
+            },
+
+            async updateUrl(id, name) {
+
+                try {
+                    const docRef = doc(db, "urls", id)
+                    const docSpan = await getDoc(docRef)
+                    if (!docSpan.exists()) {
+                        throw new Error("no existe el doc")
+                    }
+                    if (docSpan.data().user !== auth.currentUser.uid){
+                        throw new Error("Yur Not Administrator")
+                    }
+                    await updateDoc(docRef, {
+                        name:name,
+                    })
+
+                    this.documents = this.documents.map((item) => 
+                        item.id === id ? ({...item, name :name}): item)
+                    router.push('/')
+                } catch (error) {
+                    console.log(error.message)
                     return error.message
                 }
                 finally {
-                    this.loading = false
+                }
+
+            },
+            async deleteUrl (id) {
+                this.loading = true
+                try {
+                    const docRef = doc(db, 'urls', id)
+                    const docSpan = await getDoc(docRef)
+                        if (!docSpan.exists()) {
+                            throw new Error("no existe el doc")
+                        }
+                    
+                        if(docSpan.data().user !== auth.currentUser.uid){
+                            throw new Error("No tienes derechos de administrador para modificar estos datos")
+                        }
+
+                    await deleteDoc(docRef)
+                        this.documents =this.documents.filter(
+                            (item) => item.id !== id
+                    )
+
+                } catch (error) {
+                        //console.log(error.code)
+                        return error.message
+                    }
+                    finally {
+                        this.loading = false
+                }
             }
         }
-    }
-})
+        })
